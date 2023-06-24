@@ -1,22 +1,21 @@
 from flask import jsonify, make_response, request
-from  flask_restful import Resource
+from flask_restful import Resource
+from ..config import Config
 
 import docker
 
 class ContainerManager(Resource):
     def get(self):
-        # source_addr = get_remote_addr(request)
-        # source_addr = '127.0.0.1'
-        # if source_addr in WHITE_LIST_IP:
-        if True:
+        if request.remote_addr in Config.WHITE_LIST_ACCESS_IP:
             client = docker.from_env()
-            containers=[]
+            containers_list=[]
             for container in client.containers.list():
-                containers.append(container.name)
-            x={}
-            x.update({'containers':f"{containers}"})
-            print(containers)
-            return make_response(jsonify(x,200))
+                containers_list.append(container.name)
+            containers={}
+            containers.update({'containers': containers_list})
+            return make_response(jsonify(containers),200)
+        return make_response(jsonify({'result':'Not Found(403)'}),403)
+        
 
 
     def post(self):
