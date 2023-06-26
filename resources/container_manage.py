@@ -1,14 +1,18 @@
 from flask import jsonify, make_response, request
 from flask_restful import Resource, reqparse
 from ..config import Config
-
+import os
+import shutil
 import docker
-
 
 
 put_parser = reqparse.RequestParser()
 put_parser.add_argument('id', dest='container_id',required=True,help='container id')
 put_parser.add_argument('cmd', dest='cmd',required=True,help='container run cmd exec')
+
+
+del_parser = reqparse.RequestParser()
+del_parser.add_argument('path', dest='container_volume_path',required=True,help='container volume path')
 
 post_parser = reqparse.RequestParser()
 post_parser.add_argument('image', dest='container_image',required=True,help='container image')
@@ -59,6 +63,9 @@ class ContainerManager(Resource):
             ports = args['ports']
             environment = args['env']
             try:
+                path = list(volumes.keys())[0]
+                if not os.path.exists(path):
+                    os.makedirs(path)
                 container = client.containers.run(image=f"{args['container_image']}",detach=True,name=f"{args['container_name']}", volumes=volumes,ports=ports,
                         environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'])
                 container.logs()
@@ -84,12 +91,15 @@ class ContainerManager(Resource):
 
     def delete(self,id):
         if request.remote_addr in Config.WHITE_LIST_ACCESS_IP:
+            args =  del_parser.parse_args()
             client = docker.from_env()
             try:
                 container = client.containers.get(id)
                 exit_code = container.remove(v=True, force=True)
+                shutil.rmtree(args['container_volume_path'])
                 print(exit_code)
-                return make_response(jsonify({'result':'OK','message':f"{exit_code}"}),200)
+
+                return make_response(jsonify({'status':'1','result':'container removed','message':f"{exit_code}"}),200)
             except Exception as e:
                 print("run command error: ",e)
                 return make_response(jsonify({'result':'running command error'}),500)
