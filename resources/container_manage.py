@@ -22,7 +22,21 @@ post_parser.add_argument('cpu', dest='cpuset',required=False,help='number of cpu
 post_parser.add_argument('mem', dest='memory',required=False,help='memory limit of container')
 post_parser.add_argument('env', dest='env',type=dict,required=True,help='container environment varaibles')
 post_parser.add_argument('volumes', dest='volumes',type=dict,required=True,help='container volumes')
-post_parser.add_argument('ports', dest='ports',type=dict,required=True,help='ports to expose')
+post_parser.add_argument('ports', dest='ports',action='append',required=True,help='ports to expose')
+
+import socket
+
+
+def get_free_port(port=30000, max_port=40000 ):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    while port <= max_port:
+        try:
+            sock.bind(('', port))
+            sock.close()
+            return port
+        except OSError:
+            port += 1
+    raise IOError('no free ports')
 
 class ContainerManager(Resource):
     def get(self,id=None):
@@ -58,10 +72,16 @@ class ContainerManager(Resource):
     def post(self):
         if request.remote_addr in Config.WHITE_LIST_ACCESS_IP:
             args =  post_parser.parse_args()
-            print(args)
+            # print(args)
             client = docker.from_env()
             volumes = args['volumes']
-            ports = args['ports']
+            ports = {}
+            return_ports=[]
+            for port in args['ports']:
+                host_free_port = get_free_port()
+                ports.update({f"{port}/tcp":int(f"{host_free_port}")})
+                return_ports.append(host_free_port)
+            # print(ports)
             environment = args['env']
             try:
                 path = list(volumes.keys())[0]
@@ -71,7 +91,7 @@ class ContainerManager(Resource):
                         environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'])
                 container.logs()
                 result ={}
-                print(container.status)
+                # print(container.status)
                 if container.status == "exited":
                     return make_response(jsonify({"status":"0","result":"container creating error"}),500)
 
@@ -80,6 +100,7 @@ class ContainerManager(Resource):
                         'id': f"{container.id}",
                         'short_id': f"{container.short_id}",
                         'name': f"{container.name}",
+                        'host_ports':f"{return_ports}",
                         'status': f"{container.status}"
                     }})
                     result.update({"status":"1","result":"container created"})
