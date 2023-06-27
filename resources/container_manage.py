@@ -12,7 +12,8 @@ put_parser.add_argument('cmd', dest='cmd',required=True,help='container run cmd 
 
 
 del_parser = reqparse.RequestParser()
-del_parser.add_argument('path', dest='container_volume_path',required=True,help='container volume path')
+del_parser.add_argument('path', dest='container_volume_path',action='append',required=False,help='container volume path')
+del_parser.add_argument('ids', dest='container_ids',action='append',required=False,help='container volume path')
 
 post_parser = reqparse.RequestParser()
 post_parser.add_argument('image', dest='container_image',required=True,help='container image')
@@ -89,20 +90,19 @@ class ContainerManager(Resource):
 
         return make_response(jsonify({'result':'Not Found(403)'}),403)
 
-    def delete(self,id):
+    def delete(self):
         if request.remote_addr in Config.WHITE_LIST_ACCESS_IP:
             args =  del_parser.parse_args()
             client = docker.from_env()
             try:
-                container = client.containers.get(id)
-                exit_code = container.remove(v=True, force=True)
-                shutil.rmtree(args['container_volume_path'])
-                print(exit_code)
-
-                return make_response(jsonify({'status':'1','result':'container removed','message':f"{exit_code}"}),200)
+                for cid in args['container_ids']:
+                    container = client.containers.get(cid)
+                    exit_code = container.remove(v=True, force=True)
+                for dirpath in args['container_volume_path']:
+                    shutil.rmtree(dirpath)
+                    return make_response(jsonify({'status':'1','result':'containers removed','message':f"{exit_code}"}),200)
             except Exception as e:
-                print("run command error: ",e)
-                return make_response(jsonify({'result':'running command error'}),500)
+                print("run command error: ",e)                
 
         return make_response(jsonify({'result':'Not Found(403)'}),403)
 

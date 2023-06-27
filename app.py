@@ -9,5 +9,5 @@ api_bp = Blueprint("apiv1_bp",__name__,url_prefix="/api/v1")
 api = Api(api_bp)
 
 api.add_resource(GetLoad, '/load')
-api.add_resource(ContainerManager, '/containers', '/containers/<id>')
+api.add_resource(ContainerManager, '/containers')
 app.register_blueprint(api_bp)
