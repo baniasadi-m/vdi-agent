@@ -1,3 +1,3 @@
 from os import environ
 class Config:
-    WHITE_LIST_ACCESS_IP = ['127.0.0.1']
+    WHITE_LIST_ACCESS_IP = environ.get("VDI_AGENT_WHITELIST_IPS").split(",")

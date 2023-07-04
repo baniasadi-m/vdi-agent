@@ -1,0 +1,14 @@
+import multiprocessing
+from os import environ
+
+
+bind = environ.get("VDI_GUNICORN_BIND")
+workers = multiprocessing.cpu_count() * 2 + 1
+keepalive = int(environ.get("VDI_GUNICORN_KEEPALIVE"))
+timeout = environ.get("VDI_GUNICORN_TIMEOUT")
+graceful_timeout = environ.get("VDI_GUNICORN_GRACEFUL_TIMEOUT")
+max_requests = environ.get("VDI_GUNICORN_MAXREQUEST")
+accesslog = environ.get("VDI_GUNICORN_ACCESSLOG")
+access_log_format = environ.get("VDI_GUNICORN_ACCESSLOG_FORMAT")
+errorlog = environ.get("VDI_GUNICORN_ERRORLOG")
+loglevel = environ.get("VDI_GUNICORN_LOGLEVEL")
