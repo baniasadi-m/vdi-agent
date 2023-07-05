@@ -1,7 +1,7 @@
 from flask import Flask, Blueprint
 from flask_restful import Api
-from .resources.host_load import GetLoad
-from .resources.container_manage import ContainerManager
+from resources.host_load import GetLoad
+from resources.container_manage import ContainerManager
 
 
 app = Flask(__name__)

@@ -1,6 +1,6 @@
 from flask import jsonify, make_response, request
-from  flask_restful import Resource
-from ..config import Config
+from flask_restful import Resource
+from config import Config
 import shutil
 import os
 import psutil

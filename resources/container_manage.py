@@ -1,6 +1,6 @@
 from flask import jsonify, make_response, request
 from flask_restful import Resource, reqparse
-from ..config import Config
+from config import Config
 import os
 import shutil
 import docker
