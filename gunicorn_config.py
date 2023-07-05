@@ -1,9 +1,10 @@
-import multiprocessing
+# import multiprocessing
 from os import environ
 
 
 bind = environ.get("VDI_GUNICORN_BIND")
-workers = multiprocessing.cpu_count() * 2 + 1
+# workers = multiprocessing.cpu_count() * 2 + 1
+workers = "4"
 keepalive = int(environ.get("VDI_GUNICORN_KEEPALIVE"))
 timeout = environ.get("VDI_GUNICORN_TIMEOUT")
 graceful_timeout = environ.get("VDI_GUNICORN_GRACEFUL_TIMEOUT")
