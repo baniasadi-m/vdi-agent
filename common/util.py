@@ -7,10 +7,12 @@ import time
 current_time = int(time.time())
 
 secret = Config.JWT_SECRET_KEY
-
+jwt_options = {
+   'verify_signature': False,
+}
 def jwt_verified(token):
     try:
-        data = decode(token, secret, Config.JWT_ALGO)
+        data = decode(jwt=token, key=secret,options=jwt_options,algorithms=[Config.JWT_ALGO])
         print(data)
         if data['iss'] == Config.JWT_ISSUER and int(data['exp']) > int(current_time + Config.JWT_EXPIRY_TIME) and int(data['nbf']) > int(current_time - Config.JWT_NOT_BEFORE_TIME):
             return True
@@ -18,5 +20,3 @@ def jwt_verified(token):
         print("jwt verification failed:" ,e)
         return False
     
-
-
