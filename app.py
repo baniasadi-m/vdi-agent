@@ -2,6 +2,7 @@ from flask import Flask, Blueprint
 from flask_restful import Api
 from resources.host_load import GetLoad
 from resources.container_manage import ContainerManager
+from resources.network_manage import NetworkManager
 
 
 app = Flask(__name__)
@@ -10,4 +11,5 @@ api = Api(api_bp)
 
 api.add_resource(GetLoad, '/load')
 api.add_resource(ContainerManager, '/containers')
+api.add_resource(NetworkManager, '/networks')
 app.register_blueprint(api_bp)

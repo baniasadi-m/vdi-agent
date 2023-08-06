@@ -20,3 +20,27 @@ def jwt_verified(token):
         print("jwt verification failed:" ,e)
         return False
     
+def get_container_ips(id):
+    import docker
+    try:
+        client = docker.from_env()
+        container = client.containers.get(id)
+        networks = container.attrs.get("NetworkSettings").get("Networks")
+        list_ips = []
+        for k,v in networks.items():
+            print(container.attrs['NetworkSettings']['Networks'][k]['IPAddress'])
+            list_ips.append(container.attrs['NetworkSettings']['Networks'][k]['IPAddress'])
+    except Exception as e:
+        print("list ips exception:",e)
+    return list_ips   
+
+def get_network_id(name):
+    import docker
+    try:
+        client = docker.from_env()
+        networks = client.networks.list()
+        for net in networks:
+            if net.name == name:
+                return net.id
+    except Exception as e:
+        print("get net id exception:",e)

@@ -4,7 +4,7 @@ from config import Config
 import os
 import shutil
 import docker
-from common.util import jwt_verified
+from common.util import jwt_verified, get_container_ips, get_network_id
 
 
 put_parser = reqparse.RequestParser()
@@ -24,6 +24,8 @@ post_parser.add_argument('mem', dest='memory',required=False,help='memory limit 
 post_parser.add_argument('env', dest='env',type=dict,required=True,help='container environment varaibles')
 post_parser.add_argument('volumes', dest='volumes',type=dict,required=True,help='container volumes')
 post_parser.add_argument('ports', dest='ports',action='append',required=True,help='ports to expose')
+post_parser.add_argument('ip', dest='ip',required=True,help='ip to set')
+post_parser.add_argument('network', dest='network',required=True,help='network name')
 
 import socket
 
@@ -58,11 +60,13 @@ class ContainerManager(Resource):
                 except Exception as e:
                     print(e)
                     return make_response(jsonify({'result':'getting container status Failed'}),500)
+                container_ips = get_container_ips(id=f"{container.id}")
                 result.update({'container_spec':{
                     'id': f"{container.id}",
                     'short_id': f"{container.short_id}",
                     'name': f"{container.name}",
-                    'status': f"{container.status}"
+                    'status': f"{container.status}",
+                    'ips': f"{container_ips}"
                 }})
                 return make_response(jsonify(result),200)
             return make_response(jsonify({"message":"jwt token not valid"}),401)            
@@ -91,7 +95,8 @@ class ContainerManager(Resource):
                     if not os.path.exists(path):
                         os.makedirs(path)
                     container = client.containers.run(image=f"{args['container_image']}",detach=True,name=f"{args['container_name']}", volumes=volumes,ports=ports,
-                            environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'])
+                            environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'],network_mode='none')
+                    
                     container.logs()
                     result ={}
                     # print(container.status)
@@ -99,12 +104,17 @@ class ContainerManager(Resource):
                         return make_response(jsonify({"status":"0","result":"container creating error"}),500)
 
                     else:
+                        net_id = get_network_id(name=args['network'])
+                        net_obj = client.networks.get(network_id=net_id)
+                        net_obj.connect(container=f"{container.id}",ipv4_address=f"{args['ip']}")
+                        container_ips = get_container_ips(id=f"{container.id}")
                         result.update({'container_spec':{
                             'id': f"{container.id}",
                             'short_id': f"{container.short_id}",
                             'name': f"{container.name}",
                             'host_ports':f"{return_ports}",
-                            'status': f"{container.status}"
+                            'status': f"{container.status}",
+                            'ips':f"{container_ips}"
                         }})
                         result.update({"status":"1","result":"container created"})
                         return make_response(jsonify(result),200)                    
