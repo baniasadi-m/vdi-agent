@@ -7,3 +7,6 @@ class Config:
     JWT_NOT_BEFORE_TIME = int(environ.get("VDI_AGENT_JWT_NOT_BEFORE_TIME","3600"))
     JWT_ISSUE_AT = int(environ.get("VDI_AGENT_JWT_ISSUE_AT","60"))
     JWT_ISSUER = environ.get("VDI_AGENT_JWT_ISSUER")
+    NGINX_CONTAINER_NAME = environ.get("VDI_AGENT_NGINX_CONTAINER_NAME")
+    NGINX_CONFIG_PATH = environ.get("VDI_AGENT_NGINX_CONFIG_PATH")
+    NGINX_DOMAIN = environ.get("VDI_AGENT_NGINX_DOMAIN")

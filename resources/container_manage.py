@@ -83,11 +83,12 @@ class ContainerManager(Resource):
                 client = docker.from_env()
                 volumes = args['volumes']
                 ports = {}
-                return_ports=[]
+                # return_ports=[]
                 for port in args['ports']:
-                    host_free_port = get_free_port()
-                    ports.update({f"{port}/tcp":int(f"{host_free_port}")})
-                    return_ports.append(host_free_port)
+                    # host_free_port = get_free_port()
+                    # ports.update({f"{port}/tcp":int(f"{host_free_port}")})
+                    # return_ports.append(host_free_port)
+                    ports.update({f"{port}/tcp"})
                 # print(ports)
                 environment = args['env']
                 try:
@@ -112,7 +113,6 @@ class ContainerManager(Resource):
                             'id': f"{container.id}",
                             'short_id': f"{container.short_id}",
                             'name': f"{container.name}",
-                            'host_ports':f"{return_ports}",
                             'status': f"{container.status}",
                             'ips':f"{container_ips}"
                         }})

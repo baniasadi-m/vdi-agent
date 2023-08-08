@@ -3,6 +3,7 @@ from flask_restful import Api
 from resources.host_load import GetLoad
 from resources.container_manage import ContainerManager
 from resources.network_manage import NetworkManager
+from resources.nginx_manage import NginxUpdate
 
 
 app = Flask(__name__)
@@ -12,4 +13,5 @@ api = Api(api_bp)
 api.add_resource(GetLoad, '/load')
 api.add_resource(ContainerManager, '/containers')
 api.add_resource(NetworkManager, '/networks')
+api.add_resource(NginxUpdate, '/update')
 app.register_blueprint(api_bp)
