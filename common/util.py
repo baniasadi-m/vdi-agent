@@ -90,115 +90,106 @@ def nginx_proxy_update(user,vd_container_name,browser_container_name):
       """
     try:
         config_file = f"{config_path}/conf.d/{nginx_domain}.conf"
-        mode = 'a+' if os.path.exists(config_file) else 'w+'
+        # mode = 'a+' if os.path.exists(config_file) else 'w+'
+        mode = 'a+'
         #### if config file exists
         if os.path.exists(config_file):
-            if search_and_replace(filename=config_file,old="}#[[update]]",new=""):
-                with open(config_file, mode) as f:
-                    append_config="""
-                        location /[[user]] {
-                            proxy_pass http://[[container]]:80/;
-                            proxy_http_version 1.1;
-                            proxy_set_header Upgrade $http_upgrade;
-                            proxy_set_header Connection "Upgrade";
-                            proxy_set_header Host $host;
-                        }
-                        
-                    }#[[update]]
+            append_config="""
+                location /[[user]] {
+                    proxy_pass http://[[container]]:80/;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "Upgrade";
+                    proxy_set_header Host $host;
+                }
+                
+        }#[[update]]
                     """
-                    f.write(append_config)
-                    if search_and_replace(filename=config_file,old="[[user]]",new=f"{user}") and search_and_replace(filename=config_file,old="[[container]]",new=f"{vd_container_name}"):
-                        client = docker.from_env()
-                        container = client.containers.get(container_id=nginx_container_name)
-                        exit_code,output = container.exec_run(cmd="nginx -t")
-                        if int(exit_code) == 0:
-                            exit_code,output = container.exec_run(cmd="nginx -s reload")
-                            if int(exit_code) == 0:
-                                vd_nginx_config = True
-                            else:
-                                print(output)
-                                vd_nginx_config = False
-                        else:
-                            print(output)
-                            vd_nginx_config =  False
+            if search_and_replace(filename=config_file,old="}#[[update]]",new=append_config) and search_and_replace(filename=config_file,old="[[user]]",new=f"{user}") and search_and_replace(filename=config_file,old="[[container]]",new=f"{vd_container_name}"):
+                client = docker.from_env()
+                container = client.containers.get(container_id=nginx_container_name)
+                exit_code,output = container.exec_run(cmd="nginx -t")
+                if int(exit_code) == 0:
+                    exit_code,output = container.exec_run(cmd="nginx -s reload")
+                    if int(exit_code) == 0:
+                        vd_nginx_config = True
                     else:
-                        print("search and replace error(line125)")
+                        print("nginx container not reloaded",output)
                         vd_nginx_config = False
+                else:
+                    print("nginx container config not correct",output)
+                    vd_nginx_config =  False
             else: 
-                print("search and replace error(line128)")
+                print("search and replace error(line123)")
                 vd_nginx_config =  False
 
             
         else:
             with open(config_file, mode) as f:
                 f.write(nginx_conf)
-                if search_and_replace(filename=config_file,old="[[domain]]",new=f"{nginx_domain}") and search_and_replace(filename=config_file,old="}#[[update]]",new=""):
+            if search_and_replace(filename=config_file,old="[[domain]]",new=f"{nginx_domain}"):
 
-                    append_config="""
-                        location /[[user]] {
-                            proxy_pass http://[[container]]:80/;
-                            proxy_http_version 1.1;
-                            proxy_set_header Upgrade $http_upgrade;
-                            proxy_set_header Connection "Upgrade";
-                            proxy_set_header Host $host;
-                        }
-                        
-                    }#[[update]]
-                    """
-                    f.write(append_config)
-                    if search_and_replace(filename=config_file,old="[[container]]",new=f"{vd_container_name}"):
-                        client = docker.from_env()
-                        container = client.containers.get(container_id=nginx_container_name)
-                        exit_code,output = container.exec_run(cmd="nginx -t")
-                        if int(exit_code) == 0:
-                            exit_code,output = container.exec_run(cmd="nginx -s reload")
-                            if int(exit_code) == 0:
-                                vd_nginx_config = True
-                            print(output)
-                            vd_nginx_config = False
-                        print(output)
+                append_config="""
+                    location /[[user]] {
+                        proxy_pass http://[[container]]:80/;
+                        proxy_http_version 1.1;
+                        proxy_set_header Upgrade $http_upgrade;
+                        proxy_set_header Connection "Upgrade";
+                        proxy_set_header Host $host;
+                    }
+                    
+        }#[[update]]
+                """
+                 
+            if search_and_replace(filename=config_file,old="}#[[update]]",new=append_config) and search_and_replace(filename=config_file,old="[[container]]",new=f"{vd_container_name}") and search_and_replace(filename=config_file,old="[[user]]",new=f"{user}"):
+                client = docker.from_env()
+                container = client.containers.get(container_id=nginx_container_name)
+                exit_code,output = container.exec_run(cmd="nginx -t")
+                if int(exit_code) == 0:
+                    exit_code,output = container.exec_run(cmd="nginx -s reload")
+                    if int(exit_code) == 0:
+                        vd_nginx_config = True
+                    else:
                         vd_nginx_config = False
-                    print("search and replace error(line161)")
-                    vd_nginx_config = False               
+                        print("nginx container not reloaded",output)
                 else:
-                    print("search and replace error(line164)")
                     vd_nginx_config = False
+                    print("nginx container config not correct",output)
+            else:
+                print("search and replace error(line160)")
+                vd_nginx_config = False
         ######## add browser location in nginx            
         if os.path.exists(config_file):
-            if search_and_replace(filename=config_file,old="}#[[update]]",new=""):
-                with open(config_file, mode) as f:
-                    append_config="""
-                        location /[[user]]/browser {
-                            proxy_pass http://[[container]]:80/;
-                            proxy_http_version 1.1;
-                            proxy_set_header Upgrade $http_upgrade;
-                            proxy_set_header Connection "Upgrade";
-                            proxy_set_header Host $host;
-                        }
-                        
-                    }#[[update]]
-                    """
-                    f.write(append_config)
-                    if search_and_replace(filename=config_file,old="[[user]]",new=f"{user}") and search_and_replace(filename=config_file,old="[[container]]",new=f"{browser_container_name}"):
-                        client = docker.from_env()
-                        container = client.containers.get(container_id=nginx_container_name)
-                        exit_code,output = container.exec_run(cmd="nginx -t")
-                        if int(exit_code) == 0:
-                            exit_code,output = container.exec_run(cmd="nginx -s reload")
-                            if int(exit_code) == 0:
-                                browser_nginx_config = True
-                            else:
-                                print(output)
-                                browser_nginx_config = False
-                        else:
-                            print(output)
-                            browser_nginx_config =  False
+            append_config="""
+                location /[[user]]/browser {
+                    proxy_pass http://[[container]]:80/;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "Upgrade";
+                    proxy_set_header Host $host;
+                }
+                
+    }#[[update]]
+            """
+
+            if search_and_replace(filename=config_file,old="}#[[update]]",new=append_config) and search_and_replace(filename=config_file,old="[[user]]",new=f"{user}") and search_and_replace(filename=config_file,old="[[container]]",new=f"{browser_container_name}"):
+                client = docker.from_env()
+                container = client.containers.get(container_id=nginx_container_name)
+                exit_code,output = container.exec_run(cmd="nginx -t")
+                if int(exit_code) == 0:
+                    exit_code,output = container.exec_run(cmd="nginx -s reload")
+                    if int(exit_code) == 0:
+                        browser_nginx_config = True
                     else:
-                        print("search and replace error(line197)")
+                        print("nginx container not reloaded",output)
                         browser_nginx_config = False
-            else: 
-                print("search and replace error(200)")
-                browser_nginx_config =  False          
+                else:
+                    print("nginx container config not correct",output)
+                    browser_nginx_config =  False
+            else:
+                print("search and replace error(line197)")
+                browser_nginx_config = False
+        
     except Exception as e:
         print("Exception browser nginx update:",e)
 
