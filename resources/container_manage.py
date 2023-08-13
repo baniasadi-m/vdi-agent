@@ -23,8 +23,8 @@ post_parser.add_argument('cpu', dest='cpuset',required=False,help='number of cpu
 post_parser.add_argument('mem', dest='memory',required=False,help='memory limit of container')
 post_parser.add_argument('env', dest='env',type=dict,required=True,help='container environment varaibles')
 post_parser.add_argument('volumes', dest='volumes',type=dict,required=True,help='container volumes')
-post_parser.add_argument('ports', dest='ports',action='append',required=True,help='ports to expose')
-post_parser.add_argument('ip', dest='ip',required=True,help='ip to set')
+# post_parser.add_argument('ports', dest='ports',action='append',required=True,help='ports to expose')
+post_parser.add_argument('ip', dest='ip',required=False,help='ip to set')
 post_parser.add_argument('network', dest='network',required=True,help='network name')
 
 import socket
@@ -59,9 +59,9 @@ class ContainerManager(Resource):
                     container = client.containers.get(id)
                 except Exception as e:
                     print(e)
-                    return make_response(jsonify({'result':'getting container status Failed'}),500)
+                    return make_response(jsonify({'status':'0','result':'getting container status Failed'}),500)
                 container_ips = get_container_ips(id=f"{container.id}")
-                result.update({'container_spec':{
+                result.update({'status':'1','container_spec':{
                     'id': f"{container.id}",
                     'short_id': f"{container.short_id}",
                     'name': f"{container.name}",
@@ -82,22 +82,26 @@ class ContainerManager(Resource):
                 # print(args)
                 client = docker.from_env()
                 volumes = args['volumes']
-                ports = {}
+                # ports = {}
+                # ports.update({f"80/tcp"})
                 # return_ports=[]
-                for port in args['ports']:
+                # for port in args['ports']:
                     # host_free_port = get_free_port()
                     # ports.update({f"{port}/tcp":int(f"{host_free_port}")})
                     # return_ports.append(host_free_port)
-                    ports.update({f"{port}/tcp"})
+                    # ports.update({f"{port}/tcp"})
                 # print(ports)
                 environment = args['env']
                 try:
                     path = list(volumes.keys())[0]
                     if not os.path.exists(path):
                         os.makedirs(path)
-                    container = client.containers.run(image=f"{args['container_image']}",detach=True,name=f"{args['container_name']}", volumes=volumes,ports=ports,
+                    container = client.containers.run(image=f"{args['container_image']}",detach=True,name=f"{args['container_name']}", volumes=volumes,
                             environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'],network_mode='none')
                     
+                    #    container = client.containers.run(image=f"{args['container_image']}",detach=True,name=f"{args['container_name']}", volumes=volumes,ports=ports,
+                    #         environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'],network_mode='none')
+                                     
                     container.logs()
                     result ={}
                     # print(container.status)
@@ -107,7 +111,10 @@ class ContainerManager(Resource):
                     else:
                         net_id = get_network_id(name=args['network'])
                         net_obj = client.networks.get(network_id=net_id)
-                        net_obj.connect(container=f"{container.id}",ipv4_address=f"{args['ip']}")
+                        if f"{args['ip']}":
+                            net_obj.connect(container=f"{container.id}",ipv4_address=f"{args['ip']}")
+                        else:
+                            net_obj.connect(container=f"{container.id}")
                         container_ips = get_container_ips(id=f"{container.id}")
                         result.update({'container_spec':{
                             'id': f"{container.id}",
@@ -120,7 +127,7 @@ class ContainerManager(Resource):
                         return make_response(jsonify(result),200)                    
                 except Exception as e:
                     print('Run container Exception: ',e)
-                    return make_response(jsonify({'result':'create container error'}),500)
+                    return make_response(jsonify({"status":"0",'result':'create container error'}),500)
             return make_response(jsonify({"message":"jwt token not valid"}),401)
 
         return make_response(jsonify({'result':'Not Found(403)'}),403)
