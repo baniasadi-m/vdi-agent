@@ -131,6 +131,7 @@ class ContainerManager(Resource):
                         return make_response(jsonify(result),200)                    
                 except Exception as e:
                     print('Run container Exception: ',e)
+                    container.remove(force=True,v=True)
                     return make_response(jsonify({"status":"0",'result':'create container error'}),500)
             return make_response(jsonify({"message":"jwt token not valid"}),401)
 
