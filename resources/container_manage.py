@@ -97,7 +97,7 @@ class ContainerManager(Resource):
                     if not os.path.exists(path):
                         os.makedirs(path)
                     container = client.containers.run(image=f"{args['container_image']}",detach=True,name=f"{args['container_name']}", volumes=volumes,
-                            environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'],network_mode='none')
+                            environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'],network_mode='temp0')
                     
                     #    container = client.containers.run(image=f"{args['container_image']}",detach=True,name=f"{args['container_name']}", volumes=volumes,ports=ports,
                     #         environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'],network_mode='none')
@@ -109,12 +109,16 @@ class ContainerManager(Resource):
                         return make_response(jsonify({"status":"0","result":"container creating error"}),500)
 
                     else:
+                        temp_net_id = get_network_id(name='temp0')
+                        temp_net_obj = client.networks.get(network_id=temp_net_id)
                         net_id = get_network_id(name=args['network'])
                         net_obj = client.networks.get(network_id=net_id)
                         if f"{args['ip']}":
                             net_obj.connect(container=f"{container.id}",ipv4_address=f"{args['ip']}")
+                            temp_net_obj.disconnect(container=f"{container.id}")
                         else:
                             net_obj.connect(container=f"{container.id}")
+                            temp_net_obj.disconnect(container=f"{container.id}")
                         container_ips = get_container_ips(id=f"{container.id}")
                         result.update({'container_spec':{
                             'id': f"{container.id}",
