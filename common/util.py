@@ -42,7 +42,7 @@ def get_free_ip():
         x=os.popen(cmd)
         used_ips = x.read().split()
         subnet =[str(ip) for ip in ipaddress.IPv4Network('172.20.0.0/16')]
-        free_list = set(used_ips) ^ set(subnet)
+        free_list = list(set(used_ips) ^ set(subnet))
         removing_list=['172.20.0.0','172.20.0.1']
         for i in removing_list:
             if i in free_list:
