@@ -32,7 +32,18 @@ def get_container_ips(id):
             list_ips.append(container.attrs['NetworkSettings']['Networks'][k]['IPAddress'])
     except Exception as e:
         print("list ips exception:",e)
-    return list_ips   
+    return list_ips  
+def get_free_ip():
+    import docker
+    try:
+        client = docker.from_env()
+        container = client.containers.run(image=f"nginx",detach=True,name=f"get_free_ip",network_mode='no-internet')
+        container_ip = get_container_ips(id=container.id)
+        container.remove(force=True,v=True)
+        return container_ip[0]
+    except Exception as e:
+        print("free ip exception:",e)
+
 
 def get_network_id(name):
     import docker

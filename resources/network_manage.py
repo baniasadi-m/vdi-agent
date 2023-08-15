@@ -2,7 +2,7 @@ from flask import jsonify, make_response, request
 from flask_restful import Resource, reqparse
 from config import Config
 import docker
-from common.util import jwt_verified
+from common.util import jwt_verified, get_free_ip
 
 post_parser = reqparse.RequestParser()
 post_parser.add_argument('name', dest='network_name',required=True,help='name of network')
@@ -15,6 +15,21 @@ put_parser = reqparse.RequestParser()
 put_parser.add_argument('network_name', dest='network_name',required=True,help='name of network')
 put_parser.add_argument('container_id', dest='container_id',required=True,help='id of container to connect network')
 put_parser.add_argument('container_ipv4', dest='container_ipv4',required=True,help='The IP address of this container on the network')
+
+
+class GetIP(Resource):
+    def get(self):
+        if request.remote_addr in Config.WHITE_LIST_ACCESS_IP:
+            if jwt_verified(request.headers.get('jwt')):
+                try:
+                    free_ip = get_free_ip()
+                    if free_ip:
+                       return make_response(jsonify({'result':'1','free_ip': f"{free_ip}"}),200)
+                    return make_response(jsonify({'result':'0','msg': "free ip error"}),500) 
+                except Exception as e:
+                    print("free ip Exception:",e)
+
+
 
 class NetworkManager(Resource):
 
