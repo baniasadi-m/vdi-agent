@@ -33,8 +33,27 @@ def get_container_ips(id):
     except Exception as e:
         print("list ips exception:",e)
     return list_ips  
+
 def get_free_ip():
+    import ipaddress
+    import os
+    try:
+        cmd="docker network inspect no-internet | jq -r 'map(.Containers[].IPv4Address) []' | cut -d/ -f1"
+        x=os.popen(cmd)
+        used_ips = x.read().split()
+        subnet =[str(ip) for ip in ipaddress.IPv4Network('172.20.0.0/16')]
+        free_list = set(used_ips) ^ set(subnet)
+        removing_list=['172.20.0.0','172.20.0.1']
+        for i in removing_list:
+            if i in free_list:
+                free_list.remove(i)
+        return free_list.pop(0)
+    except Exception as e:
+        print("free ip exception:",e)
+
+def get_free_ip_old():
     import docker
+    import time
     try:
         client = docker.from_env()
         container = client.containers.run(image=f"nginx",detach=True,name=f"get_free_ip",network_mode='no-internet')
