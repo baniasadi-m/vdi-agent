@@ -105,7 +105,7 @@ def nginx_proxy_update(user,vd_container_name,browser_container_name):
         mode = 'a+'
         #### if config file exists
         if os.path.exists(config_file):
-            nginx_config=f"include /etc/nginx/conf.d/{user}.conf;" + '\n\n }#[[update]]'
+            nginx_config=f"include /etc/nginx/conf.d/{user};" + '\n\n }#[[update]]'
             user_config="""
                 location /[[user]] {
                     proxy_pass http://[[container]]:80/;
@@ -122,14 +122,12 @@ def nginx_proxy_update(user,vd_container_name,browser_container_name):
                     proxy_set_header Connection "Upgrade";
                     proxy_set_header Host $host;
                 }
-                    
-        }#[[update]]
    
                     """
             if search_and_replace(filename=config_file,old="}#[[update]]",new=nginx_config):
-                with open(f"{config_path}/conf.d/{user}.conf", 'w+') as file:
+                with open(f"{config_path}/conf.d/{user}", 'w+') as file:
                     file.write(user_config)
-                if search_and_replace(filename=f"{config_path}/conf.d/{user}.conf",old="[[user]]",new=f"{user}") and search_and_replace(filename=f"{config_path}/conf.d/{user}.conf",old="[[container]]",new=f"{vd_container_name}") and search_and_replace(filename=f"{config_path}/conf.d/{user}.conf",old="[[fb_container]]",new=f"{browser_container_name}"):
+                if search_and_replace(filename=f"{config_path}/conf.d/{user}",old="[[user]]",new=f"{user}") and search_and_replace(filename=f"{config_path}/conf.d/{user}",old="[[container]]",new=f"{vd_container_name}") and search_and_replace(filename=f"{config_path}/conf.d/{user}",old="[[fb_container]]",new=f"{browser_container_name}"):
                     client = docker.from_env()
                     container = client.containers.get(container_id=nginx_container_name)
                     exit_code,output = container.exec_run(cmd="nginx -t")
