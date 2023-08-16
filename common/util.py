@@ -43,7 +43,7 @@ def get_free_ip():
         used_ips = x.read().split()
         subnet =[str(ip) for ip in ipaddress.IPv4Network('172.20.0.0/16')]
         free_list = list(set(used_ips) ^ set(subnet))
-        removing_list=['172.20.0.0','172.20.0.1']
+        removing_list=['172.20.0.0','172.20.0.1','172.20.0.2','172.20.0.3']
         for i in removing_list:
             if i in free_list:
                 free_list.remove(i)
@@ -100,15 +100,12 @@ def nginx_proxy_update(user,vd_container_name,browser_container_name):
     vd_nginx_config = False
     browser_nginx_config = False 
     try:
-        config_file = f"{config_path}/conf.d/{user}.conf"
+        config_file = f"{config_path}/conf.d/vdi-proxy.conf"
         # mode = 'a+' if os.path.exists(config_file) else 'w+'
         mode = 'a+'
         #### if config file exists
         if os.path.exists(config_file):
-            nginx_config="""
-            include /etc/nginx/conf.d/{user}.conf;
-        }#[[update]]
-            """
+            nginx_config=f"include /etc/nginx/conf.d/{user}.conf;" + '\n\n }#[[update]]'
             user_config="""
                 location /[[user]] {
                     proxy_pass http://[[container]]:80/;
@@ -132,7 +129,7 @@ def nginx_proxy_update(user,vd_container_name,browser_container_name):
             if search_and_replace(filename=config_file,old="}#[[update]]",new=nginx_config):
                 with open(f"{config_path}/conf.d/{user}.conf", 'w+') as file:
                     file.write(user_config)
-                if search_and_replace(filename=config_file,old="[[user]]",new=f"{user}") and search_and_replace(filename=config_file,old="[[container]]",new=f"{vd_container_name}") and search_and_replace(filename=config_file,old="[[fb_container]]",new=f"{browser_container_name}"):
+                if search_and_replace(filename=f"{config_path}/conf.d/{user}.conf",old="[[user]]",new=f"{user}") and search_and_replace(filename=f"{config_path}/conf.d/{user}.conf",old="[[container]]",new=f"{vd_container_name}") and search_and_replace(filename=f"{config_path}/conf.d/{user}.conf",old="[[fb_container]]",new=f"{browser_container_name}"):
                     client = docker.from_env()
                     container = client.containers.get(container_id=nginx_container_name)
                     exit_code,output = container.exec_run(cmd="nginx -t")
@@ -151,7 +148,7 @@ def nginx_proxy_update(user,vd_container_name,browser_container_name):
                 return False
             
     except Exception as e:
-        print("Exception browser nginx update:",e)
+        print("Exception browser nginx update:",e,repr(e))
 
         
 def nginx_proxy_update_old(user,vd_container_name,browser_container_name):

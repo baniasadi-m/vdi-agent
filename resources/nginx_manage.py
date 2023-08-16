@@ -15,7 +15,7 @@ class NginxUpdate(Resource):
                 args =  post_parser.parse_args()
                 if args['user']:
                     if nginx_proxy_update(user=args['user'],vd_container_name=args['vd_container'],browser_container_name=args['fb_container']):
-                        return make_response(jsonify({"status":"1","result":"nginx config updated"}),200) 
+                        return make_response(jsonify({"status":"1","msg":"nginx config updated"}),200) 
                     else:
                         return make_response(jsonify({"message":"nginx config failed"}),401)
                 return make_response(jsonify({"message":"no object name found"}),401)
