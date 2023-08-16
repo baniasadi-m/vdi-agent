@@ -96,6 +96,68 @@ def nginx_proxy_update(user,vd_container_name,browser_container_name):
     import os, docker
     nginx_container_name = f"{Config.NGINX_CONTAINER_NAME}"
     config_path = f"{Config.NGINX_CONFIG_PATH}"
+    # nginx_domain = f"{Config.NGINX_DOMAIN}"
+    vd_nginx_config = False
+    browser_nginx_config = False 
+    try:
+        config_file = f"{config_path}/conf.d/{user}.conf"
+        # mode = 'a+' if os.path.exists(config_file) else 'w+'
+        mode = 'a+'
+        #### if config file exists
+        if os.path.exists(config_file):
+            nginx_config="""
+            include /etc/nginx/conf.d/{user}.conf;
+        }#[[update]]
+            """
+            user_config="""
+                location /[[user]] {
+                    proxy_pass http://[[container]]:80/;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "Upgrade";
+                    proxy_set_header Host $host;
+                }
+                
+                location /[[user]]/browser  {
+                    proxy_pass http://[[fb_container]]:80/;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "Upgrade";
+                    proxy_set_header Host $host;
+                }
+                    
+        }#[[update]]
+   
+                    """
+            if search_and_replace(filename=config_file,old="}#[[update]]",new=nginx_config):
+                with open(f"{config_path}/conf.d/{user}.conf", 'w+') as file:
+                    file.write(user_config)
+                if search_and_replace(filename=config_file,old="[[user]]",new=f"{user}") and search_and_replace(filename=config_file,old="[[container]]",new=f"{vd_container_name}") and search_and_replace(filename=config_file,old="[[fb_container]]",new=f"{browser_container_name}"):
+                    client = docker.from_env()
+                    container = client.containers.get(container_id=nginx_container_name)
+                    exit_code,output = container.exec_run(cmd="nginx -t")
+                    if int(exit_code) == 0:
+                        exit_code,output = container.exec_run(cmd="nginx -s reload")
+                        if int(exit_code) == 0:
+                            return True
+                        else:
+                            print("nginx container not reloaded",output)
+                            return False
+                    else:
+                        print("nginx container config not correct",output)
+                        return False
+            else: 
+                print("search and replace error( include config file")
+                return False
+            
+    except Exception as e:
+        print("Exception browser nginx update:",e)
+
+        
+def nginx_proxy_update_old(user,vd_container_name,browser_container_name):
+    import os, docker
+    nginx_container_name = f"{Config.NGINX_CONTAINER_NAME}"
+    config_path = f"{Config.NGINX_CONFIG_PATH}"
     nginx_domain = f"{Config.NGINX_DOMAIN}"
     vd_nginx_config = False
     browser_nginx_config = False
