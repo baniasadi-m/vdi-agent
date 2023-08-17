@@ -4,7 +4,7 @@ from config import Config
 import os
 import shutil
 import docker
-from common.util import jwt_verified, get_container_ips, get_network_id
+from common.util import jwt_verified, get_container_ips, get_network_id, search_and_replace
 
 
 put_parser = reqparse.RequestParser()
@@ -15,6 +15,7 @@ put_parser.add_argument('cmd', dest='cmd',required=True,help='container run cmd 
 del_parser = reqparse.RequestParser()
 del_parser.add_argument('path', dest='container_volume_path',action='append',required=False,help='container volume path')
 del_parser.add_argument('ids', dest='container_ids',action='append',required=False,help='container volume path')
+del_parser.add_argument('user', dest='user',action='append',required=False,help='vdi user')
 
 post_parser = reqparse.RequestParser()
 post_parser.add_argument('image', dest='container_image',required=True,help='container image')
@@ -148,6 +149,11 @@ class ContainerManager(Resource):
                         exit_code = container.remove(v=True, force=True)
                     for dirpath in args['container_volume_path']:
                         shutil.rmtree(dirpath)
+                    if os.path.exists(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user']}"):
+                        os.remove(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user']}")
+                    if search_and_replace(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user']}",old=f"include /etc/nginx/conf.d/{args['user']};",new=""):
+                        nginx_container = client.containers.get(f"{Config.NGINX_CONTAINER_NAME}")
+                        nginx_container.restart()
                         return make_response(jsonify({'status':'1','result':'containers removed','message':f"{exit_code}"}),200)
                 except Exception as e:
                     print("run command error: ",e)   
