@@ -142,6 +142,7 @@ class ContainerManager(Resource):
         if request.remote_addr in Config.WHITE_LIST_ACCESS_IP:
             if jwt_verified(request.headers.get('jwt')):
                 args =  del_parser.parse_args()
+                print(args,args['user'][0])
                 client = docker.from_env()
                 try:
                     for cid in args['container_ids']:
@@ -149,9 +150,9 @@ class ContainerManager(Resource):
                         exit_code = container.remove(v=True, force=True)
                     for dirpath in args['container_volume_path']:
                         shutil.rmtree(dirpath)
-                    if os.path.exists(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user']}"):
-                        os.remove(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user']}")
-                    if search_and_replace(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user']}",old=f"include /etc/nginx/conf.d/{args['user']};",new=""):
+                    if os.path.exists(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user'][0]}"):
+                        os.remove(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user'][0]}")
+                    if search_and_replace(f"{Config.NGINX_CONFIG_PATH}/conf.d/vdi-proxy.conf",old=f"include /etc/nginx/conf.d/{args['user'][0]};",new=""):
                         nginx_container = client.containers.get(f"{Config.NGINX_CONTAINER_NAME}")
                         nginx_container.restart()
                         return make_response(jsonify({'status':'1','result':'containers removed','message':f"{exit_code}"}),200)
