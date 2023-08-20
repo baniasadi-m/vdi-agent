@@ -108,7 +108,7 @@ def nginx_proxy_update(user,vd_container_name,browser_container_name):
             nginx_config=f"include /etc/nginx/conf.d/{user};" + '\n\n }#[[update]]'
             user_config="""
                 location /[[user]] {
-                    proxy_pass http://[[container]]:80/;
+                    proxy_pass http://[[container]]/[[user]]/;
                     proxy_http_version 1.1;
                     proxy_set_header Upgrade $http_upgrade;
                     proxy_set_header Connection "Upgrade";
