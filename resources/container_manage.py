@@ -98,7 +98,7 @@ class ContainerManager(Resource):
                     if not os.path.exists(path):
                         os.makedirs(path)
                     container = client.containers.run(image=f"{args['container_image']}",detach=True,name=f"{args['container_name']}", volumes=volumes,
-                            environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'],network_mode='temp0',restart_policy= {"Name": "always", "MaximumRetryCount": 5})
+                            environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'],network_mode='temp0',restart_policy= {"Name": "always"})
                     
                     #    container = client.containers.run(image=f"{args['container_image']}",detach=True,name=f"{args['container_name']}", volumes=volumes,ports=ports,
                     #         environment=environment,mem_limit=f"{args['memory']}",cpuset_cpus= args['cpuset'],network_mode='none')
