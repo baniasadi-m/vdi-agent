@@ -115,8 +115,8 @@ def nginx_proxy_update(user,vd_container_name,browser_container_name):
                     proxy_set_header Host $host;
                 }
                 
-                location /[[user]]/browser  {
-                    proxy_pass http://[[fb_container]]:80/;
+                location /[[user]]/fbrowser  {
+                    proxy_pass http://[[fb_container]];
                     proxy_http_version 1.1;
                     proxy_set_header Upgrade $http_upgrade;
                     proxy_set_header Connection "Upgrade";
