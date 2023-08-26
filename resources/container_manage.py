@@ -138,26 +138,32 @@ class ContainerManager(Resource):
 
         return make_response(jsonify({'result':'Not Found(403)'}),403)
 
-    def delete(self):
+    def delete(self,id=None):
         if request.remote_addr in Config.WHITE_LIST_ACCESS_IP:
             if jwt_verified(request.headers.get('jwt')):
-                args =  del_parser.parse_args()
-                print(args,args['user'][0])
+
                 client = docker.from_env()
-                try:
-                    for cid in args['container_ids']:
-                        container = client.containers.get(cid)
-                        exit_code = container.remove(v=True, force=True)
-                    for dirpath in args['container_volume_path']:
-                        shutil.rmtree(dirpath)
-                    if os.path.exists(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user'][0]}"):
-                        os.remove(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user'][0]}")
-                    if search_and_replace(f"{Config.NGINX_CONFIG_PATH}/conf.d/vdi-proxy.conf",old=f"include /etc/nginx/conf.d/{args['user'][0]};",new=""):
-                        nginx_container = client.containers.get(f"{Config.NGINX_CONTAINER_NAME}")
-                        nginx_container.restart()
-                        return make_response(jsonify({'status':'1','result':'containers removed','message':f"{exit_code}"}),200)
-                except Exception as e:
-                    print("run command error: ",e)   
+                if id == None:
+                    args =  del_parser.parse_args()
+                    print(args,args['user'][0])
+                    try:
+                        for cid in args['container_ids']:
+                            container = client.containers.get(cid)
+                            exit_code = container.remove(v=True, force=True)
+                        for dirpath in args['container_volume_path']:
+                            shutil.rmtree(dirpath)
+                        if os.path.exists(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user'][0]}"):
+                            os.remove(f"{Config.NGINX_CONFIG_PATH}/conf.d/{args['user'][0]}")
+                        if search_and_replace(f"{Config.NGINX_CONFIG_PATH}/conf.d/vdi-proxy.conf",old=f"include /etc/nginx/conf.d/{args['user'][0]};",new=""):
+                            nginx_container = client.containers.get(f"{Config.NGINX_CONTAINER_NAME}")
+                            nginx_container.restart()
+                            return make_response(jsonify({'status':'1','result':'containers removed','message':f"{exit_code}"}),200)
+                    except Exception as e:
+                        print("run command error: ",e)
+                else:
+                    container = client.containers.get(id)
+                    exit_code = container.remove(v=True, force=True) 
+                    return make_response(jsonify({'status':'1','result':'container removed','message':f"{exit_code}"}),200)   
             return make_response(jsonify({"message":"jwt token not valid"}),401)             
 
         return make_response(jsonify({'result':'Not Found(403)'}),403)
