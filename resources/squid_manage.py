@@ -15,9 +15,9 @@ class SquidUpdate(Resource):
                 args =  post_parser.parse_args()
                 client = docker.from_env()
                 squid_container = client.containers.get(container_id='squid-proxy')
-                cmd = f"bash -c 'echo {args['username']}:{args['password']}' >> /passwords.local"
+                cmd = f"bash -c 'echo {args['username']}:{args['password']} >> /passwords.local'"
                 try:
-                    exit_code,output = squid_container.exec_run(cmd=cmd,detach=True)
+                    exit_code,output = squid_container.exec_run(cmd=cmd)
                     if exit_code == 0:
                         squid_container.restart()
                         return make_response(jsonify({"status":"1","message":"user created"}),201)
