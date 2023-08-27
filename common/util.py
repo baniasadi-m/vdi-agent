@@ -94,6 +94,21 @@ def search_and_replace(filename, old, new):
 
 def nginx_proxy_update(user,vd_container_name,browser_container_name):
     import os, docker
+    commands = [
+        "bash /.firefox.sh",
+        "bash -c 'find / -type f -name '.firefox.sh' -exec rm {} \;'"
+    ]
+    try:
+        cmd=f"docker cp /opt/firefox.sh {vd_container_name}:/.firefox.sh"
+        os.system(cmd)
+        client2 = docker.from_env()
+        vd_container = client2.containers.get(container_id=vd_container_name)
+        print(vd_container.name)
+        for cmd in commands:
+            exit_code,output = vd_container.exec_run(cmd=cmd)
+            print(cmd,exit_code,output)
+    except Exception as e:
+        print(e)
     nginx_container_name = f"{Config.NGINX_CONTAINER_NAME}"
     config_path = f"{Config.NGINX_CONFIG_PATH}"
     # nginx_domain = f"{Config.NGINX_DOMAIN}"
