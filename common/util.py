@@ -96,7 +96,10 @@ def nginx_proxy_update(user,vd_container_name,browser_container_name):
     import os, docker
     commands = [
         "bash /.firefox.sh",
-        "bash -c 'find / -type f -name '.firefox.sh' -exec rm {} \;'"
+        "bash -c 'find / -type f -name '.firefox.sh' -exec rm {} \;'",
+        "bash -c 'sed -i 's/novnc2/AqrVdi/g' /usr/local/lib/web/frontend/static/js/app.fef011cae8f5fbff4b55.js ' "
+        "bash -c 'sed -i 's/novnc2/AqrVdi/g' /usr/local/lib/web/frontend/static/js/app.fef011cae8f5fbff4b55.js.map ' "
+        "bash -c 'sed -i 's/novnc2/AqrVdi/g' /usr/local/lib/web/frontend/index.html ' "
     ]
     try:
         cmd=f"docker cp /opt/firefox.sh {vd_container_name}:/.firefox.sh"
