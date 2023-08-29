@@ -99,6 +99,7 @@ def nginx_proxy_update(user,vd_container_name,browser_container_name):
         "bash -c 'sed -i 's/novnc2/AqrVdi/g' /usr/local/lib/web/frontend/static/js/app.fef011cae8f5fbff4b55.js ' ",
         "bash -c 'sed -i 's/novnc2/AqrVdi/g' /usr/local/lib/web/frontend/static/js/app.fef011cae8f5fbff4b55.js.map ' ",
         "bash -c 'sed -i 's/novnc2/AqrVdi/g' /usr/local/lib/web/frontend/index.html ' ",
+        "bash -c 'apt remove -y lxterminal'",
         "bash -c 'find / -type f -name '.firefox.sh' -exec rm {} \;'",
     ]
     try:
