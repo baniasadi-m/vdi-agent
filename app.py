@@ -2,7 +2,8 @@ from flask import Flask, Blueprint
 from flask_restful import Api
 from resources.host_load import GetLoad
 from resources.container_manage import ContainerManager
-from resources.network_manage import NetworkManager,GetIP
+from resources.network_manage import NetworkManager
+from resources.get_ip import GetIP
 from resources.nginx_manage import NginxUpdate
 from resources.squid_manage import SquidUpdate
 

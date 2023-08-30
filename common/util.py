@@ -44,8 +44,8 @@ def get_free_ip(profile_ips=[]):
         subnet =[str(ip) for ip in ipaddress.IPv4Network('172.20.0.0/16')]
         free_list = list(set(used_ips) ^ set(subnet))
         removing_list=['172.20.0.0','172.20.0.1','172.20.0.2','172.20.0.3']
-        for ip in profile_ips:
-            removing_list.append(ip)
+        if profile_ips != None:
+            removing_list.extend(profile_ips)
         for i in removing_list:
             if i in free_list:
                 free_list.remove(i)

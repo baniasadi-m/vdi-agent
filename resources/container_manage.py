@@ -24,7 +24,6 @@ post_parser.add_argument('cpu', dest='cpuset',required=False,help='number of cpu
 post_parser.add_argument('mem', dest='memory',required=False,help='memory limit of container')
 post_parser.add_argument('env', dest='env',type=dict,required=True,help='container environment varaibles')
 post_parser.add_argument('volumes', dest='volumes',type=dict,required=True,help='container volumes')
-# post_parser.add_argument('ports', dest='ports',action='append',required=True,help='ports to expose')
 post_parser.add_argument('ip', dest='ip',required=False,help='ip to set')
 post_parser.add_argument('network', dest='network',required=True,help='network name')
 

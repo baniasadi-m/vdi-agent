@@ -24,7 +24,7 @@ class GetIP(Resource):
             if jwt_verified(request.headers.get('jwt')):
                 try:
                     args = ip_parser.parse_args()
-                    free_ip = get_free_ip(profile_ips=args['ips'])
+                    free_ip = get_free_ip(profile_ips=args['profile_ips'])
                     if free_ip:
                        return make_response(jsonify({'result':'1','free_ip': f"{free_ip}"}),200)
                     return make_response(jsonify({'result':'0','msg': "free ip error"}),500) 
