@@ -34,7 +34,7 @@ def get_container_ips(id):
         print("list ips exception:",e)
     return list_ips  
 
-def get_free_ip():
+def get_free_ip(profile_ips=[]):
     import ipaddress
     import os
     try:
@@ -44,6 +44,8 @@ def get_free_ip():
         subnet =[str(ip) for ip in ipaddress.IPv4Network('172.20.0.0/16')]
         free_list = list(set(used_ips) ^ set(subnet))
         removing_list=['172.20.0.0','172.20.0.1','172.20.0.2','172.20.0.3']
+        for ip in profile_ips:
+            removing_list.append(ip)
         for i in removing_list:
             if i in free_list:
                 free_list.remove(i)

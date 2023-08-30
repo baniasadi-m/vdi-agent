@@ -16,13 +16,15 @@ put_parser.add_argument('network_name', dest='network_name',required=True,help='
 put_parser.add_argument('container_id', dest='container_id',required=True,help='id of container to connect network')
 put_parser.add_argument('container_ipv4', dest='container_ipv4',required=True,help='The IP address of this container on the network')
 
-
+ip_parser = reqparse.RequestParser()
+ip_parser.add_argument('ips', dest='profile_ips',action='append',required=False,help='active profiles ip')
 class GetIP(Resource):
-    def get(self):
+    def post(self):
         if request.remote_addr in Config.WHITE_LIST_ACCESS_IP:
             if jwt_verified(request.headers.get('jwt')):
                 try:
-                    free_ip = get_free_ip()
+                    args = ip_parser.parse_args()
+                    free_ip = get_free_ip(profile_ips=args['ips'])
                     if free_ip:
                        return make_response(jsonify({'result':'1','free_ip': f"{free_ip}"}),200)
                     return make_response(jsonify({'result':'0','msg': "free ip error"}),500) 
